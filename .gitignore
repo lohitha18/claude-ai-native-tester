@@ -1,0 +1,6 @@
+venv
+reports
+.env
+__pycache__
+test-results
+playwright-report

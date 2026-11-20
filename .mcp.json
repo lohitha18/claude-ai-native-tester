@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "github-readonly": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/x/repos/readonly",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_PAT}",
+        "X-MCP-Lockdown": "true"
+      },
+      "timeout": 30000
+    }
+  }
+}
