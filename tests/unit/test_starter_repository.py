@@ -31,6 +31,12 @@ def test_main_is_console_only():
     assert "Login functionality is intentionally not implemented" in source
 
 
+def test_workflow_allows_push_pipeline_without_real_metrics_but_requires_them_for_dispatch():
+    workflow = (ROOT / ".github/workflows/quality.yml").read_text()
+    assert 'GITHUB_EVENT_NAME: ${{ github.event_name }}' in workflow
+    assert "os.getenv('GITHUB_EVENT_NAME') == 'workflow_dispatch'" in workflow
+
+
 def test_placeholder_password_is_not_a_real_production_secret():
     source = (ROOT / "starter-repo/src/main/java/com/technova/payment/auth/User.java").read_text()
     assert "Starter-only model" in source

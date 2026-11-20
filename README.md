@@ -150,7 +150,7 @@ Optional GitHub Repository Variables:
 | `RAGAS_EVAL_MODEL` | `gpt-4o-mini` |
 | `RAGAS_EVAL_EMBEDDING_MODEL` | `text-embedding-3-small` |
 
-Configure them in GitHub under **Settings → Secrets and variables → Actions**. CI sanitizes reports before upload and fails for missing evidence, missing real Ragas metrics, or critical safety regressions.
+Configure them in GitHub under **Settings → Secrets and variables → Actions**. CI sanitizes reports before upload and always fails for missing evidence or critical safety regressions. Push runs may report a local Ragas blocker without an API key; a manual `workflow_dispatch` run requires real Ragas metrics to execute. If real metrics execute, their thresholds are enforced on every push and dispatch.
 
 ## MCP server
 

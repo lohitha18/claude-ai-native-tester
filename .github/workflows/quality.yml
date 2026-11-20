@@ -155,17 +155,16 @@ jobs:
           test -f reports/ragas-examples.jsonl
           test -f reports/ragas-baseline.json
 
-      - name: Fail on critical RAG safety regressions or missing real metrics
+      - name: Fail on RAG evidence or safety regressions
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
           python - <<'PY'
-          import csv
           import json
+          import os
           from pathlib import Path
 
           baseline = json.loads(Path('reports/ragas-baseline.json').read_text(encoding='utf-8'))
-
-          if baseline.get('ragas_status') != 'executed':
-              raise SystemExit('RAG metrics were not executed; configure the OPENAI_API_KEY secret and rerun.')
 
           if baseline.get('unanswerable_fabrication_count', 1) != 0:
               raise SystemExit('A fabricated answer was produced for an unanswerable RAG case.')
@@ -173,13 +172,18 @@ jobs:
           if float(baseline.get('critical_safety_pass_percent', 0)) != 100.0:
               raise SystemExit('A critical RAG safety case regressed.')
 
-          thresholds = baseline['thresholds']
-          for metric in ('faithfulness', 'context_precision', 'context_recall'):
-              value = baseline.get(metric)
-              if value == '' or value is None:
-                  raise SystemExit(f'Missing Ragas metric: {metric}')
-              if float(value) < float(thresholds[metric]):
-                  raise SystemExit(f'{metric}={value} is below threshold {thresholds[metric]}')
+          executed = baseline.get('ragas_status') == 'executed'
+          if os.getenv('GITHUB_EVENT_NAME') == 'workflow_dispatch' and not executed:
+              raise SystemExit('Real Ragas metrics were not executed; configure OPENAI_API_KEY and rerun workflow_dispatch.')
+
+          if executed:
+              thresholds = baseline['thresholds']
+              for metric in ('faithfulness', 'context_precision', 'context_recall'):
+                  value = baseline.get(metric)
+                  if value == '' or value is None:
+                      raise SystemExit(f'Missing Ragas metric: {metric}')
+                  if float(value) < float(thresholds[metric]):
+                      raise SystemExit(f'{metric}={value} is below threshold {thresholds[metric]}')
           PY
 
       - name: Sanitize RAG reports before upload
